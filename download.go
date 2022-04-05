@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/go-zoox/crypto/md5"
 	"github.com/go-zoox/fetch"
@@ -352,6 +353,7 @@ func (d *Downloader) downloadFilePart(part *FilePart) error {
 		Headers: map[string]string{
 			"Range": fmt.Sprintf("bytes=%d-%d", part.RangeStart, part.RangeEnd),
 		},
+		Timeout: 120 * time.Second,
 	})
 	if err != nil {
 		return err
@@ -408,6 +410,11 @@ func (d *Downloader) downloadFileParts() (err error) {
 	for _, part := range d.FileParts {
 		go func(part *FilePart) {
 			defer wg.Done()
+
+			if os.Getenv("DEBUG") == "true" {
+				fmt.Println("downloading part :", part.Index, part.Path)
+			}
+
 			err = d.downloadFilePart(part)
 		}(part)
 	}

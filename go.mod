@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/go-zoox/crypto v1.0.2
-	github.com/go-zoox/fetch v1.1.7
+	github.com/go-zoox/fetch v1.1.8
 	github.com/go-zoox/fs v1.0.6
 )
 
@@ -18,6 +18,6 @@ require (
 	github.com/tidwall/gjson v1.14.0 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.0 // indirect
-	golang.org/x/sys v0.0.0-20220330033206-e17cdc41300f // indirect
+	golang.org/x/sys v0.0.0-20220405052023-b1e9470b6e64 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 )
