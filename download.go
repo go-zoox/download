@@ -149,13 +149,13 @@ func (d *Downloader) getFilePath() string {
 }
 
 func (d *Downloader) parseURL(u string) error {
-	parsedUrl, err := url.Parse(u)
+	parsedURL, err := url.Parse(u)
 	if err != nil {
 		return errors.New("invalid url: " + u + ": " + err.Error())
 	}
 
 	if d.FileName == "" {
-		paths := strings.Split(parsedUrl.Path, "/")
+		paths := strings.Split(parsedURL.Path, "/")
 		last := paths[len(paths)-1]
 		exts := strings.Split(last, ".")
 		if len(exts) > 1 {
