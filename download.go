@@ -414,7 +414,9 @@ func (d *Downloader) downloadFileParts() (err error) {
 				fmt.Println("downloading part:", part.Index, part.Path)
 			}
 
-			err = d.downloadFilePart(part)
+			if err := d.downloadFilePart(part); err != nil {
+				panic(err)
+			}
 
 			// time.Sleep(1 * time.Second)
 		}, part)
