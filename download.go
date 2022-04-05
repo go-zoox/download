@@ -349,7 +349,7 @@ func (d *Downloader) downloadFilePart(part *FilePart) error {
 	}
 
 	// 2. download file part
-	response, err := fetch.Get(d.URL, &fetch.Config{
+	response, err := fetch.Download(d.URL, part.Path, &fetch.Config{
 		Headers: map[string]string{
 			"Range": fmt.Sprintf("bytes=%d-%d", part.RangeStart, part.RangeEnd),
 		},
@@ -396,27 +396,33 @@ func (d *Downloader) downloadFilePart(part *FilePart) error {
 		return fmt.Errorf("invalid status: %d", response.Status)
 	}
 
-	if err := fs.WriteFile(part.Path, response.Body); err != nil {
-		return err
-	}
+	// if err := fs.WriteFile(part.Path, response.Body); err != nil {
+	// 	return err
+	// }
 
 	return nil
 }
 
 func (d *Downloader) downloadFileParts() (err error) {
 	wg := sync.WaitGroup{}
-	wg.Add(len(d.FileParts))
+	ch := make(chan bool, 2)
+	// wg.Add(len(d.FileParts))
+
+	download := func(ch chan bool, part *FilePart) {
+		defer wg.Done()
+
+		ch <- true
+
+		fmt.Println("downloading part:", part.Index, part.Path)
+		err = d.downloadFilePart(part)
+
+		time.Sleep(1 * time.Second)
+		<-ch
+	}
 
 	for _, part := range d.FileParts {
-		go func(part *FilePart) {
-			defer wg.Done()
-
-			if os.Getenv("DEBUG") == "true" {
-				fmt.Println("downloading part :", part.Index, part.Path)
-			}
-
-			err = d.downloadFilePart(part)
-		}(part)
+		wg.Add(1)
+		go download(ch, part)
 	}
 
 	wg.Wait()
@@ -472,13 +478,13 @@ func (d *Downloader) downloadByRanges() error {
 }
 
 func (d *Downloader) downloadByDirect() error {
-	response, err := fetch.Get(d.URL)
+	response, err := fetch.Download(d.URL, d.getFilePath())
 	if err != nil {
 		return err
 	}
 
-	if err := fs.WriteFile(d.getFilePath(), response.Body); err != nil {
-		return err
+	if response.Status != http.StatusOK {
+		return fmt.Errorf("invalid status: %d", response.Status)
 	}
 
 	return nil
