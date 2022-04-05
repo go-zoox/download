@@ -9,9 +9,9 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
+	"github.com/go-zoox/cocurrent"
 	"github.com/go-zoox/crypto/md5"
 	"github.com/go-zoox/fetch"
 	"github.com/go-zoox/fs"
@@ -404,28 +404,23 @@ func (d *Downloader) downloadFilePart(part *FilePart) error {
 }
 
 func (d *Downloader) downloadFileParts() (err error) {
-	wg := sync.WaitGroup{}
-	ch := make(chan bool, 2)
-	// wg.Add(len(d.FileParts))
-
-	download := func(ch chan bool, part *FilePart) {
-		defer wg.Done()
-
-		ch <- true
-
-		fmt.Println("downloading part:", part.Index, part.Path)
-		err = d.downloadFilePart(part)
-
-		time.Sleep(1 * time.Second)
-		<-ch
-	}
+	co := cocurrent.New(3)
 
 	for _, part := range d.FileParts {
-		wg.Add(1)
-		go download(ch, part)
+		co.Add(func(args ...interface{}) {
+			part := args[0].(*FilePart)
+
+			if os.Getenv("DEBUG") == "true" {
+				fmt.Println("downloading part:", part.Index, part.Path)
+			}
+
+			err = d.downloadFilePart(part)
+
+			// time.Sleep(1 * time.Second)
+		}, part)
 	}
 
-	wg.Wait()
+	co.Wait()
 	return
 }
 

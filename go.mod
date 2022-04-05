@@ -10,6 +10,7 @@ require (
 
 require (
 	github.com/fatih/color v1.13.0 // indirect
+	github.com/go-zoox/cocurrent v1.0.0 // indirect
 	github.com/go-zoox/uuid v0.0.1 // indirect
 	github.com/goccy/go-yaml v1.9.5 // indirect
 	github.com/google/uuid v1.3.0 // indirect
