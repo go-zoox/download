@@ -16,14 +16,14 @@ import (
 	"github.com/go-zoox/fs"
 )
 
-// DEFAULT_SEGMENT_SIZE stands for the default segment size (10 Mb)
+// DefaultSegmentSize stands for the default segment size (10 Mb)
 //	if the segment size is not set, the default segment size is used
-var DEFAULT_SEGMENT_SIZE = 10 * 1024 * 1024
+var DefaultSegmentSize = 10 * 1024 * 1024
 
 // Downloader is the downloader
 type Downloader struct {
-	// Url is the url to download
-	Url string
+	// URL is the url to download
+	URL string
 	// FileDir represents the directory to store the downloaded file
 	FileDir string
 	// FileName represents the file name
@@ -88,7 +88,7 @@ type Config struct {
 
 // New returns a new downloader
 func New(url string, config *Config) *Downloader {
-	SegmentSize := DEFAULT_SEGMENT_SIZE
+	SegmentSize := DefaultSegmentSize
 	TmpDir := fs.TmpDirPath()
 	FileDir := fs.CurrentDir()
 	FileName := ""
@@ -117,7 +117,7 @@ func New(url string, config *Config) *Downloader {
 	}
 
 	return &Downloader{
-		Url:              url,
+		URL:              url,
 		SegmentSize:      SegmentSize,
 		TmpDir:           TmpDir,
 		FileDir:          FileDir,
@@ -148,7 +148,7 @@ func (d *Downloader) getFilePath() string {
 	return fmt.Sprintf("%s/%s.%s", d.FileDir, d.FileName, d.FileExt)
 }
 
-func (d *Downloader) parseUrl(u string) error {
+func (d *Downloader) parseURL(u string) error {
 	parsedUrl, err := url.Parse(u)
 	if err != nil {
 		return errors.New("invalid url: " + u + ": " + err.Error())
@@ -281,7 +281,7 @@ func (d *Downloader) parseFileInfo() error {
 
 func (d *Downloader) parseHash() error {
 	data := []string{
-		d.Url,
+		d.URL,
 		d.ContentType,
 		strconv.FormatInt(d.ContentLength, 10),
 		// d.FileName,
@@ -317,7 +317,7 @@ func (d *Downloader) parse() error {
 }
 
 func (d *Downloader) checkSupportRange() (bool, error) {
-	response, err := fetch.Head(d.Url)
+	response, err := fetch.Head(d.URL)
 	if err != nil {
 		return d.IsSupportRange, err
 	}
@@ -348,7 +348,7 @@ func (d *Downloader) downloadFilePart(part *FilePart) error {
 	}
 
 	// 2. download file part
-	response, err := fetch.Get(d.Url, &fetch.Config{
+	response, err := fetch.Get(d.URL, &fetch.Config{
 		Headers: map[string]string{
 			"Range": fmt.Sprintf("bytes=%d-%d", part.RangeStart, part.RangeEnd),
 		},
@@ -465,7 +465,7 @@ func (d *Downloader) downloadByRanges() error {
 }
 
 func (d *Downloader) downloadByDirect() error {
-	response, err := fetch.Get(d.Url)
+	response, err := fetch.Get(d.URL)
 	if err != nil {
 		return err
 	}
@@ -480,7 +480,7 @@ func (d *Downloader) downloadByDirect() error {
 // Download downloads the file
 func (d *Downloader) Download() error {
 	// parse url get file info
-	err := d.parseUrl(d.Url)
+	err := d.parseURL(d.URL)
 	if err != nil {
 		return err
 	}
